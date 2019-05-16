@@ -1,34 +1,93 @@
 import argparse
+from copy import deepcopy
 
-class Variable:
-        def __init__(self, assign):
-                self.assign = assign 
-        def __hash__(self):
-                return hash(self.assign)
-        def __eq__(self, other):
-                if self.assign == other.assign:
-                        return True
-                else:
-                        return False
+def find_unit_clause(clauses, variables):
+        f_a = deepcopy(clauses)
+        unit_clause = -1
+        empty_clause = -1
+        i = 0
+        for clause in f_a:
+                for literal in clause:
+                        value = variables[abs(literal)]
+                        if literal > 0:
+                                sign = 1
+                        else:
+                                sign = -1
+                        if value == -1:
+                                continue
+                        if value * sign == 1:
+                                f_a.remove(clause)
+                        else:
+                                clause.remove(literal)
+                                if len(clause) == 0:
+                                        empty_clause = i
+                                elif len(clause) == 1
+                                        unit_clause = i
+                i += 1
+                                
+        return f_a, unit_clause, empty_clause
 
-class Literal:
-        def __init__(self, variable, sign):
-                self.variable = variable
-                self.sign = sign
-        def __hash__(self):
-                return hash((self.variable, self.sign))
-        def __eq__(self, other):
-                if self.variable == other.variable and self.sign == other.sign:
-                        return True
+def resolve(c1, c2, p)
+        if p in c1:
+                resolvent = (c1 - set(p)) | (c2 - set([-p]))
+        else:
+                resolvent = (c1 - set(-p)) | (c2 - set([p]))
+
+        return resolvent
+
+def clause_learning(clauses, decision, empty_clause):
+        conflict = clauses[empty_clause]
+        for d in reversed(decision):
+                if d[2] == True || d[0] not in conflict:
+                        continue
                 else:
-                        return False
-        def evaluate(self):
-                if self.sign == True:
-                        return self.variable.assign
+                        conflict = resolvent(conflict, d[3], d[0])
+        return conflict
+
+def dpll(clauses, variables):
+        clauses_l = list(clauses)
+        is_unsat = False
+        decision = []
+
+        #unit propagation
+        while True:
+                while True:
+                        f_a, unit_clause, empty_clause = find_unit_clause(clauses, variables)
+                        if len(f_a) == 0
+                                return decision
+                        elif empty_clause >= 0:
+                                break
+                        elif unit_clause >= 0:
+                                c = clauses_l[unit_clause]
+                                l = list(c)[0]
+                                #(literal, value, decision, C_i)
+                                if l > 0:
+                                        decision.append((l, 1, False, unit_clause)        
+                                        variables[abs(l)] = 1
+                                else:
+                                        decision.append((l, 0, False, unit_clause)        
+                                        variables[abs(l)] = 0
+                        else:
+                                break
+
+                if empty_clause >= 0:
+                        learned_clause = clause_learning(clauses_l, decision, empty_clause)
+                        if len(learned_clause) == 0:
+                                is_unsat = True
+                                break
+                        clauses.add(learned_clause)
                 else:
-                        return not self.variable.assign
-                       
-#def dpll(clauses, partial_assignment):
+                        decision.append
+
+        if is_unsat == True
+                print('s UNSATISFIABLE')
+        else:
+                print('s SATISFIABLE')
+                for i in range(len(decision)):
+
+
+                                
+
 def main():
         parser = argparse.ArgumentParser()
         parser.add_argument("file", help="input for dpll")
@@ -52,18 +111,15 @@ def main():
                         num_var = int(param[2])
                         num_clause = int(param[3])
                         for i in range(0, num_var + 1):
-                                variables.append(Variable(False))
+                                variables.append(-1)
                 else:
                         numbers = line.split()
                         literals = []
                         for number in numbers:
                                 n = int(number)
-                                sign = True
                                 if n == 0:
                                         break
-                                if n < 0:
-                                        sign = False
-                                literals.append(Literal(variables[n], sign))
+                                literals.append(n)
                                 temp = frozenset(literals)
                                 clauses.add(temp)
 
