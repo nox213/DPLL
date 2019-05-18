@@ -110,7 +110,7 @@ def min_conflict(var, f_a, true_clauses):
                         continue
                 if var in clause:
                         true += 1
-                else if -var in clause:
+                elif -var in clause:
                         false += 1
 
         if true > false:
