@@ -80,18 +80,19 @@ def clause_learning(clauses, decision, empty_clause, variables):
 #        print(decision)
         return conflict
 
-def decise_variable(clauses, variables, decision):
-        i = 0
-        for variable in variables:
-                if variable == -1:
-                        return i
-                i += 1
+def decise_variable(clauses, variables, decision, variables_freq):
+        for variable in variables_freq:
+                var = variable[0]
+                if var != 0 and variables[var] == -1:
+                        return var
                 
-def dpll(clauses, variables):
+def dpll(clauses, variables,  variables_freq):
         decision = []
+        learned = []
         #unit propagation
         while True:
                 while True:
+#print(decision)
                         f_a, unit_clause, empty_clause = find_unit_clause(clauses, variables)
                         if len(f_a) == 0:
                                 return decision
@@ -113,16 +114,17 @@ def dpll(clauses, variables):
                 if empty_clause >= 0:
                         learned_clause = clause_learning(clauses, decision, empty_clause, variables)
                         clauses.append(learned_clause)
-#   for i in range(80, len(clauses)):
-#                                print(clauses[i])
-#                        print('==========================')
+                        if learned_clause in learned:
+                                print('duplicate!!')
+                                return list()
+                        learned.append(learned_clause)
                         if len(learned_clause) == 0:
                                 return list()
                 else:
-                        var = decise_variable(clauses, variables, decision)
+                        var = decise_variable(clauses, variables, decision, variables_freq)
                         variables[var] = 1
-                        decision.append((var, 1, True))
-#decision.append((var, random.randrange(0,2), True))
+#          decision.append((var, 1, True))
+                        decision.append((var, random.randrange(0,2), True))
 
 def main():
         parser = argparse.ArgumentParser()
@@ -131,12 +133,13 @@ def main():
         print(args.file)
 
         variables = []
+        variables_freq = []
         clauses = set()
         
         f = open(args.file, 'r')
         lines = f.readlines()
         for line in lines:
-                if line[0] == 'c':
+                if line[0] == 'c' or line[0] == '%' or line[0] == '0':
                         continue
                 elif line[0] == 'p':
                         param = line.split()
@@ -148,6 +151,7 @@ def main():
                         num_clause = int(param[3])
                         for i in range(0, num_var + 1):
                                 variables.append(-1)
+                                variables_freq.append((i, 0))
                 else:
                         numbers = line.split()
                         literals = []
@@ -156,16 +160,18 @@ def main():
                                 if n == 0:
                                         break
                                 literals.append(n)
+                                variables_freq[abs(n)] = (variables_freq[abs(n)][0], variables_freq[abs(n)][1])
                                 temp = frozenset(literals)
                         clauses.add(temp)
 
         #variable 0 is not used
         variables[0] = 100
-        p_a = dpll(list(clauses), variables)
+        sorted(variables_freq, key=lambda frequency: frequency[1])
+        p_a = dpll(list(clauses), variables,  variables_freq)
         if len(p_a) > 0:
                 print('s SATISFIABLE')
         else:
-                print('s SATISFIABLE')
+                print('s UNSATISFIABLE')
 
 if __name__ == '__main__':
         main()
