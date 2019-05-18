@@ -160,13 +160,13 @@ def main():
                                 if n == 0:
                                         break
                                 literals.append(n)
-                                variables_freq[abs(n)] = (variables_freq[abs(n)][0], variables_freq[abs(n)][1])
+                                variables_freq[abs(n)] = (variables_freq[abs(n)][0], variables_freq[abs(n)][1] + 1)
                                 temp = frozenset(literals)
                         clauses.add(temp)
 
         #variable 0 is not used
         variables[0] = 100
-        sorted(variables_freq, key=lambda frequency: frequency[1])
+        variables_freq.sort(reverse=True, key=lambda frequency: frequency[1])
         p_a = dpll(list(clauses), variables,  variables_freq)
         if len(p_a) > 0:
                 print('s SATISFIABLE')
