@@ -1,4 +1,5 @@
 import argparse
+import time
 import random
 from copy import deepcopy
 
@@ -67,31 +68,31 @@ def resolve(c1, c2, p):
 
         return resolvent
 
-def clause_learning(clauses, decision, empty_clause, variables):
-#        print('decision')
-#        print(decision)
+def clause_learning(clauses, decision, empty_clause, variables, restart):
         conflict = clauses[empty_clause]
-#        print('C')
-#        print(conflict)
         for d in reversed(decision):
                 if (d[2] == True) or ((d[0] not in conflict) and (-d[0] not in conflict)):
                         continue
                 else:
                         conflict = resolve(conflict, clauses[d[3]], d[0])
-#        print('learned clause')
-#        print(conflict)
-        while True:
-                is_unit = True
-                for d in decision:
-                        if d[0] in conflict or -d[0] in conflict:
-                                is_unit = False
+
+        if len(conflict) == 0:
+                return conflict
+
+        #backtrack
+        if restart == True:
+                while True:
+                        if len(decision) == 1:
                                 break
-                if is_unit == True:
-                        break
-                variables[decision.pop()[0]] = -1
-                        
-#        print('backtrcked')
-#        print(decision)
+                        d = decision.pop()
+                        variables[d[0]] = -1
+        else:
+                while True:
+                       d = decision.pop()
+                       variables[d[0]] = -1
+                       if d[2] == True and (d[0] in conflict or -d[0] in conflict):
+                               break
+
         return conflict
 
 def decise_variable(clauses, variables, decision, variables_freq):
@@ -102,7 +103,6 @@ def decise_variable(clauses, variables, decision, variables_freq):
                         return var
 
 def min_conflict(var, f_a, true_clauses):
-
         true = 0
         false = 0
         for i, clause in list(enumerate(f_a)):
@@ -117,15 +117,14 @@ def min_conflict(var, f_a, true_clauses):
                 return 1
         else:
                 return 0
-
                 
 def dpll(clauses, variables, vars_freq):
         decision = []
-        learned = []
+        num_conflict = 0
+        threshold = 500
         #unit propagation
         while True:
                 while True:
-#print(decision)
                         f_a, unit_clause, empty_clause, true_clauses = find_unit_clause(clauses, variables, vars_freq)
                         if len(f_a) == 0:
                                 return decision
@@ -145,19 +144,21 @@ def dpll(clauses, variables, vars_freq):
                                 break
 
                 if empty_clause >= 0:
-                        learned_clause = clause_learning(clauses, decision, empty_clause, variables)
+                        num_conflict += 1
+                        if num_conflict > threshold:
+                                num_conflict = 0
+                                restart = True
+                        else:
+                                restart = False
+                        learned_clause = clause_learning(clauses, decision, empty_clause, variables, restart)
                         clauses.append(learned_clause)
-                        if learned_clause in learned:
-                                print('duplicate!!')
-                                return list()
-                        learned.append(learned_clause)
                         if len(learned_clause) == 0:
                                 return list()
                 else:
                         var = decise_variable(clauses, variables, decision, vars_freq)
-                        variables[var] = 1
                         value = min_conflict(var, f_a, true_clauses)
                         decision.append((var, value, True))
+                        variables[var] = value
 #decision.append((var, random.randrange(0,2), True))
 
 def main():
@@ -199,11 +200,22 @@ def main():
 
         #variable 0 is not used
         variables[0] = 100
+
+        start = time.time()
         p_a = dpll(list(clauses), variables, vars_freq)
+        end = time.time()
         if len(p_a) > 0:
                 print('s SATISFIABLE')
+                print('v', end=' ')
+                for var in p_a:
+                        a = var[0]
+                        if var[1] == 0:
+                                a = -a
+                        print(a, end=' ')
+                print('0')
         else:
                 print('s UNSATISFIABLE')
+        print('---%s seconds ---' % (end - start))
 
 if __name__ == '__main__':
         main()
