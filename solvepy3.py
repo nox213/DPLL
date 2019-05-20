@@ -70,8 +70,10 @@ def resolve(c1, c2, p):
 
 def clause_learning(clauses, decision, empty_clause, variables, restart):
         conflict = clauses[empty_clause]
+        decision_level = 0
         for d in reversed(decision):
                 if (d[2] == True) or ((d[0] not in conflict) and (-d[0] not in conflict)):
+                        decision_level += 1
                         continue
                 else:
                         conflict = resolve(conflict, clauses[d[3]], d[0])
@@ -82,10 +84,12 @@ def clause_learning(clauses, decision, empty_clause, variables, restart):
         #backtrack
         if restart == True:
                 while True:
-                        if len(decision) == 1:
+                        if len(decision) == 1 or decision_level == 0:
                                 break
                         d = decision.pop()
                         variables[d[0]] = -1
+                        if d[2] == True:
+                                decision_level -= 1
         else:
                 while True:
                        d = decision.pop()
@@ -95,7 +99,7 @@ def clause_learning(clauses, decision, empty_clause, variables, restart):
 
         return conflict
 
-def decise_variable(clauses, variables, decision, variables_freq):
+def decied_variable(clauses, variables, decision, variables_freq):
         variables_freq.sort(reverse=True, key=lambda frequency: frequency[1])
         for variable in variables_freq:
                 var = variable[0]
@@ -139,7 +143,7 @@ def dpll(clauses, variables, vars_freq):
                         if len(learned_clause) == 0:
                                 return list()
                 else:
-                        var = decise_variable(clauses, variables, decision, vars_freq)
+                        var = decied_variable(clauses, variables, decision, vars_freq)
                         value = random.randrange(0, 2)
                         decision.append((var, value, True))
                         variables[var] = value
