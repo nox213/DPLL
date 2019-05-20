@@ -99,7 +99,7 @@ def clause_learning(clauses, decision, empty_clause, variables, restart):
 
         return conflict
 
-def decied_variable(clauses, variables, decision, variables_freq):
+def decide_variable(clauses, variables, decision, variables_freq):
         variables_freq.sort(reverse=True, key=lambda frequency: frequency[1])
         for variable in variables_freq:
                 var = variable[0]
@@ -143,7 +143,7 @@ def dpll(clauses, variables, vars_freq):
                         if len(learned_clause) == 0:
                                 return list()
                 else:
-                        var = decied_variable(clauses, variables, decision, vars_freq)
+                        var = decide_variable(clauses, variables, decision, vars_freq)
                         value = random.randrange(0, 2)
                         decision.append((var, value, True))
                         variables[var] = value
