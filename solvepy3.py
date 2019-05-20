@@ -101,22 +101,6 @@ def decise_variable(clauses, variables, decision, variables_freq):
                 var = variable[0]
                 if var != 0 and variables[var] == -1:
                         return var
-
-def min_conflict(var, f_a, true_clauses):
-        true = 0
-        false = 0
-        for i, clause in list(enumerate(f_a)):
-                if i in true_clauses:
-                        continue
-                if var in clause:
-                        true += 1
-                elif -var in clause:
-                        false += 1
-
-        if true > false:
-                return 1
-        else:
-                return 0
                 
 def dpll(clauses, variables, vars_freq):
         decision = []
@@ -156,10 +140,9 @@ def dpll(clauses, variables, vars_freq):
                                 return list()
                 else:
                         var = decise_variable(clauses, variables, decision, vars_freq)
-                        value = min_conflict(var, f_a, true_clauses)
+                        value = random.randrange(0, 2)
                         decision.append((var, value, True))
                         variables[var] = value
-#decision.append((var, random.randrange(0,2), True))
 
 def main():
         parser = argparse.ArgumentParser()
@@ -215,7 +198,7 @@ def main():
                 print('0')
         else:
                 print('s UNSATISFIABLE')
-        print('---%s seconds ---' % (end - start))
+#print('---%s seconds ---' % (end - start))
 
 if __name__ == '__main__':
         main()
